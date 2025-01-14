@@ -5,8 +5,8 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Flat(models.Model):
-    new_building = models.BooleanField('Новое здание', 
-                                       null=True, 
+    new_building = models.BooleanField('Новое здание',
+                                       null=True,
                                        blank=False)
     created_at = models.DateTimeField(
         'Когда создано объявление',
@@ -41,28 +41,47 @@ class Flat(models.Model):
         blank=True,
         db_index=True)
 
-    has_balcony = models.BooleanField('Наличие балкона', null=True, db_index=True)
+    has_balcony = models.BooleanField('Наличие балкона',
+                                      null=True,
+                                      db_index=True)
     active = models.BooleanField('Активно ли объявление', db_index=True)
     construction_year = models.IntegerField(
         'Год постройки здания',
         null=True,
         blank=True,
         db_index=True)
-    liked_by = models.ManyToManyField(User, related_name='liked_flats')
+    liked_by = models.ManyToManyField(User,
+                                      related_name='liked_flats',
+                                      verbose_name='Кому понравилось')
+
     def __str__(self):
         return f'{self.town}, {self.address} ({self.price}р.)'
 
 
 class Complaint(models.Model):
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, verbose_name='Кто написал', null=True)
-    flat = models.ForeignKey(Flat, on_delete=models.CASCADE, verbose_name='На какую квартиру')
-    complaint_text = models.TextField('Текст жалобы')
+    author = models.ForeignKey(User,
+                               on_delete=models.SET_NULL,
+                               verbose_name='Кто написал',
+                               null=True)
+    flat = models.ForeignKey(Flat,
+                             on_delete=models.CASCADE,
+                             verbose_name='На какую квартиру')
+    text = models.TextField('Текст жалобы')
+
+    def __str__(self):
+        return f'{self.author}'
 
 
 class Owner(models.Model):
     owner = models.CharField('ФИО владельца', max_length=200)
-    owners_phonenumber = models.CharField('Номер владельца', max_length=20)
-    owner_pure_phone = PhoneNumberField(region='RU', null=True, verbose_name='Нормализованный номер владельца')
-    flats_in_ownership = models.ManyToManyField(Flat, blank=True, related_name='flat_owner', verbose_name='Квартиры во владении')
+    phonenumber = models.CharField('Номер владельца', max_length=20)
+    pure_phone = PhoneNumberField(region='RU',
+                                  null=True,
+                                  verbose_name='Нормализованный номер владельца')
+    flats_in_ownership = models.ManyToManyField(Flat,
+                                                blank=True,
+                                                related_name='owned_by',
+                                                verbose_name='Квартиры во владении')
+
     def __str__(self):
         return self.owner

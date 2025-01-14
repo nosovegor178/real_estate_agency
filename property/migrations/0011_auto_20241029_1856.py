@@ -6,24 +6,17 @@ from phonenumber_field.modelfields import PhoneNumberField
 def fill_correct_phonenumber(apps, schema_editor):
     Flat = apps.get_model('property', 'Flat')
     flat_objects = Flat.objects.all()
-    for flat_object in flat_objects:
+    for flat_object in flat_objects.iterator():
         parsed_number = phonenumbers.parse(flat_object.owners_phonenumber, 'RU')
-        with transaction.atomic():
-            if phonenumbers.is_valid_number(parsed_number):
-                pure_number = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
-                flat_object.owner_pure_phone = pure_number
-                flat_object.save(update_fields=['owner_pure_phone'])
-            else:
-                flat_object.owner_pure_phone = None
-                flat_object.save(update_fields=['owner_pure_phone'])
-
+        if phonenumbers.is_valid_number(parsed_number):
+            pure_number = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+            flat_object.pure_phone = pure_number
+            flat_object.save(update_fields=['pure_phone'])
+        
 
 def move_backward(apps, schema_editor):
     Flat = apps.get_model('property', 'Flat')
-    for flat in Flat.objects.all():
-        flat.owner_pure_phone = None       
-        flat.save 
-
+    Flat.objects.all().update(owner_pure_phone = None)
 
 class Migration(migrations.Migration):
 
