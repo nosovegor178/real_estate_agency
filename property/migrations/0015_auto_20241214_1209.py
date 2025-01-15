@@ -8,12 +8,12 @@ def bond_flats_to_owners(apps, schema_editor):
     Flat = apps.get_model('property', 'Flat')
     owners = Owner.objects.all()
     for owner in owners.iterator():
-        owner.flats_in_ownership.set(Flat.objects.filter(owner=owner.owner))
+        owner.flats.set(Flat.objects.filter(owner=owner.full_name))
 
 
 def move_backward(apps, schema_editor):
     Owner = apps.get_model('property', 'Owner')
-    Owner.objects.all().update(flats_in_ownership = [])
+    Owner.objects.all().update(flats = [])
 
 
 class Migration(migrations.Migration):
